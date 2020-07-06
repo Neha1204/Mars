@@ -1,5 +1,3 @@
-var Util       = require('../core/Util');
-
 /**
  * The visualization controller will works as a state machine.
  * See files under the `doc` folder for transition descriptions.
@@ -137,33 +135,9 @@ $.extend(Controller, {
 
         timeStart = window.performance ? performance.now() : Date.now();
         grid = this.grid.clone();
-
-        var pathA = finder.findPath(
+        this.path = finder.findPath(
             this.startX, this.startY, this.endX, this.endY, grid
         );
-
-        var pathB = finder.findPath(
-            this.startX, this.startY, this.endX2, this.endY2, grid
-        );
-
-        var pathC = finder.findPath(
-            this.endX, this.endY, this.endX2, this.endY2, grid
-        );
-
-        var lenA = Util.pathlength(pathA), lenB = Util.pathlength(pathB);
-
-        if(lenA < lenB){
-            console.log("A");
-            this.path = pathA.concat(pathC);  
-        }
-        
-        else{
-            console.log("B"); 
-            this.path = pathB.concat(reverse(pathC));
-        }
-     //   this.path = finder.findPath(
-     //       this.startX, this.startY, this.endX, this.endY, grid
-     //   );
         this.operationCount = this.operations.length;
         timeEnd = window.performance ? performance.now() : Date.now();
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
@@ -506,7 +480,6 @@ $.extend(Controller, {
 
         this.setStartPos(centerX - 5, centerY);
         this.setEndPos(centerX + 5, centerY);
-        this.setEndPos2(centerX, centerY);
     },
     setStartPos: function(gridX, gridY) {
         this.startX = gridX;
@@ -518,11 +491,6 @@ $.extend(Controller, {
         this.endY = gridY;
         View.setEndPos(gridX, gridY);
     },
-    setEndPos2: function(gridX, gridY) {
-        this.endX2 = gridX;
-        this.endY2 = gridY;
-        View.setEndPos2(gridX, gridY);
-    },
     setWalkableAt: function(gridX, gridY, walkable) {
         this.grid.setWalkableAt(gridX, gridY, walkable);
         View.setAttributeAt(gridX, gridY, 'walkable', walkable);
@@ -531,7 +499,7 @@ $.extend(Controller, {
         return gridX === this.startX && gridY === this.startY;
     },
     isEndPos: function(gridX, gridY) {
-        return (gridX === this.endX && gridY === this.endY) || (gridX === this.endX2 && gridY === this.endY2);
+        return gridX === this.endX && gridY === this.endY;
     },
     isStartOrEndPos: function(gridX, gridY) {
         return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY);
