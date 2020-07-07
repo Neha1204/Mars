@@ -177,7 +177,7 @@ $.extend(Controller, {
         }
         
         else{ 
-            pathB.pop();
+            pathC.pop();
             Path = pathB.concat(pathC.reverse());
         }
 
