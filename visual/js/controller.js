@@ -242,6 +242,7 @@ $.extend(Controller, {
             Controller.clearOperations();
             Controller.clearAll();
             Controller.buildNewGrid();
+            Controller.setDefaultStartEndPos();
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
     },
