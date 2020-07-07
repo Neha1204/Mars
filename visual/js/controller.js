@@ -274,6 +274,11 @@ $.extend(Controller, {
             text: 'Clear Walls',
             enabled: true,
             callback: $.proxy(this.reset, this),
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: true,
+            callback: $.proxy(this.set, this),
         });
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
