@@ -152,12 +152,14 @@ $.extend(Controller, {
 
         timeStart = window.performance ? performance.now() : Date.now();
         grid = this.grid.clone();
-        grid1 = this.grid.clone();
-        grid2 = this.grid.clone();
 
         var pathA = finder.findPath(
             this.startX, this.startY, this.endX, this.endY, grid
         );
+        
+     if(this.endX2 !== undefined || Controller.getDest() == "Two"){
+        grid1 = this.grid.clone();
+        grid2 = this.grid.clone();
 
         var pathB = finder.findPath(
             this.startX, this.startY, this.endX2, this.endY2, grid1
@@ -178,6 +180,10 @@ $.extend(Controller, {
             pathB.pop();
             this.path = pathB.concat(pathC.reverse());
         }
+       }
+
+       else this.path = pathA;
+
      //   this.path = finder.findPath(
      //       this.startX, this.startY, this.endX, this.endY, grid
      //   );
