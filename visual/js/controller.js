@@ -190,7 +190,6 @@ $.extend(Controller, {
      }
 
      else {
-        if(!pathA.length) {window.alert("Path not found"); console.log("Not found"); }
         this.path = pathA;
      }
 
@@ -202,6 +201,7 @@ $.extend(Controller, {
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
 
         this.loop();
+        if(!this.path.length) {window.alert("Path not found"); console.log("Not found"); }
         // => searching
     },
     onrestart: function() {
