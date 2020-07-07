@@ -74,6 +74,11 @@ var Controller = StateMachine.create({
             to:   'draggingEnd'
         },
         {
+            name: 'dragEnd2',
+            from: ['ready', 'finished'],
+            to:   'draggingEnd2'
+        },
+        {
             name: 'drawWall',
             from: ['ready', 'finished'],
             to:   'drawingWall'
@@ -420,6 +425,10 @@ $.extend(Controller, {
             this.dragEnd();
             return;
         }
+        if (this.can('dragEnd2') && this.isEndPos2(gridX, gridY)) {
+            this.dragEnd2();
+            return;
+        }
         if (this.can('drawWall') && grid.isWalkableAt(gridX, gridY)) {
             this.drawWall(gridX, gridY);
             return;
@@ -447,6 +456,11 @@ $.extend(Controller, {
         case 'draggingEnd':
             if (grid.isWalkableAt(gridX, gridY)) {
                 this.setEndPos(gridX, gridY);
+            }
+            break;
+        case 'draggingEnd2':
+            if (grid.isWalkableAt(gridX, gridY)) {
+                this.setEndPos2(gridX, gridY);
             }
             break;
         case 'drawingWall':
