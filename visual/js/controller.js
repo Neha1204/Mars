@@ -149,13 +149,15 @@ $.extend(Controller, {
             this.endX, this.endY, this.endX2, this.endY2, grid
         );
 
-        var lenA = 30, lenB = 40;
+        var lenA = PF.Util.pathLength(pathA), lenB = PF.Util.pathLength(pathB);
 
         if(lenA < lenB){
+            pathC.shift();
             this.path = pathA.concat(pathC);  
         }
         
         else{ 
+            pathB.pop();
             this.path = pathB.concat(reverse(pathC));
         }
      //   this.path = finder.findPath(
