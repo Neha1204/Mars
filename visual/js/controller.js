@@ -14,6 +14,11 @@ var Controller = StateMachine.create({
             to:   'ready'
         },
         {
+            name: 'set',
+            from: '*',
+            to:   'ready'
+        },
+        {
             name: 'search',
             from: 'starting',
             to:   'searching'
@@ -99,6 +104,12 @@ var Controller = StateMachine.create({
 $.extend(Controller, {
     gridSize: [64, 36], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
+    
+     getDest: function(){ 
+      var destattr =$('input[name=dest]:checked').val();
+
+      return destattr;
+    },
 
     /**
      * Asynchronous transition from `none` state to `ready` state.
@@ -218,6 +229,15 @@ $.extend(Controller, {
     },
     onmodify: function(event, from, to) {
         // => modified
+    },
+    onset: function(event, from, to) {
+        console.log("Onset");
+        setTimeout(function() {
+            Controller.clearOperations();
+            Controller.clearAll();
+            Controller.buildNewGrid();
+        }, View.nodeColorizeEffect.duration * 1.2);
+        // => ready
     },
     onreset: function(event, from, to) {
         setTimeout(function() {
@@ -521,7 +541,8 @@ $.extend(Controller, {
 
         this.setStartPos(centerX - 5, centerY);
         this.setEndPos(centerX + 5, centerY);
-        this.setEndPos2(centerX, centerY);
+        
+        if(Controller.getDest() == "Two") this.setEndPos2(centerX, centerY);
     },
     setStartPos: function(gridX, gridY) {
         this.startX = gridX;
@@ -549,6 +570,7 @@ $.extend(Controller, {
         return (gridX === this.endX && gridY === this.endY);
     },
     isEndPos2: function(gridX, gridY) {
+        if(this.endX2 === undefined) return false;
         return (gridX === this.endX2 && gridY === this.endY2);
     },
     isStartOrEndPos: function(gridX, gridY) {
