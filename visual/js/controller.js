@@ -160,7 +160,7 @@ $.extend(Controller, {
      if(this.endX2 !== undefined && Controller.getDest() == "Two"){
         grid1 = this.grid.clone();
         grid2 = this.grid.clone();
-
+        var Path;
         var pathB = finder.findPath(
             this.startX, this.startY, this.endX2, this.endY2, grid1
         );
@@ -173,16 +173,23 @@ $.extend(Controller, {
 
         if(lenA < lenB){
             pathC.shift();
-            this.path = pathA.concat(pathC);  
+            Path = pathA.concat(pathC);  
         }
         
         else{ 
             pathB.pop();
-            this.path = pathB.concat(pathC.reverse());
+            Path = pathB.concat(pathC.reverse());
         }
-       }
 
-       else this.path = pathA;
+       if(lenA+lenB < PF.Util.pathLength(Path)){ 
+            pathA.shift();
+            Path = (pathB.reverse()).concat(pathA);
+       }
+       
+       this.path = Path;
+     }
+
+     else this.path = pathA;
 
      //   this.path = finder.findPath(
      //       this.startX, this.startY, this.endX, this.endY, grid
@@ -241,7 +248,7 @@ $.extend(Controller, {
         setTimeout(function() {
             Controller.clearOperations();
             Controller.clearAll();
-            Controller.onleavenone();
+            Controller.buildNewGrid();
          // Controller.setDefaultStartEndPos();
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
@@ -290,6 +297,11 @@ $.extend(Controller, {
         this.setButtonStates({
             id: 2,
             enabled: true,
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: false,
+            callback: $.proxy(this.set, this),
         });
         this.search();
         // => searching
@@ -306,6 +318,11 @@ $.extend(Controller, {
             text: 'Pause Search',
             enabled: true,
             callback: $.proxy(this.pause, this),
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: false,
+            callback: $.proxy(this.set, this),
         });
         // => [paused, finished]
     },
@@ -321,6 +338,11 @@ $.extend(Controller, {
             text: 'Cancel Search',
             enabled: true,
             callback: $.proxy(this.cancel, this),
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: true,
+            callback: $.proxy(this.set, this),
         });
         // => [searching, ready]
     },
@@ -336,6 +358,11 @@ $.extend(Controller, {
             text: 'Clear Path',
             enabled: true,
             callback: $.proxy(this.clear, this),
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: true,
+            callback: $.proxy(this.set, this),
         });
     },
     onmodified: function() {
@@ -350,6 +377,11 @@ $.extend(Controller, {
             text: 'Clear Path',
             enabled: true,
             callback: $.proxy(this.clear, this),
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: true,
+            callback: $.proxy(this.set, this),
         });
     },
 
