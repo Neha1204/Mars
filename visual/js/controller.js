@@ -189,7 +189,10 @@ $.extend(Controller, {
        this.path = Path;
      }
 
-     else this.path = pathA;
+     else {
+        if(pathA.empty()) {window.alert("Path not found"); console.log("Not found"); }
+        this.path = pathA;
+     }
 
      //   this.path = finder.findPath(
      //       this.startX, this.startY, this.endX, this.endY, grid
