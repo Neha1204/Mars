@@ -201,7 +201,7 @@ $.extend(Controller, {
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
 
         this.loop();
-        if(!this.path.length) {window.alert("Path not found"); console.log("Not found"); }
+        
         // => searching
     },
     onrestart: function() {
@@ -236,6 +236,8 @@ $.extend(Controller, {
             operationCount: this.operationCount,
         });
         View.drawPath(this.path);
+
+        if(!this.path.length) {window.alert("Path not found"); console.log("Not found"); }
         // => finished
     },
     onclear: function(event, from, to) {
