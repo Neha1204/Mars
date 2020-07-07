@@ -158,7 +158,7 @@ $.extend(Controller, {
         
         else{ 
             pathB.pop();
-            this.path = pathB.concat(reverse(pathC));
+            this.path = pathB.concat(pathC.reverse());
         }
      //   this.path = finder.findPath(
      //       this.startX, this.startY, this.endX, this.endY, grid
