@@ -141,17 +141,19 @@ $.extend(Controller, {
 
         timeStart = window.performance ? performance.now() : Date.now();
         grid = this.grid.clone();
+        grid1 = this.grid.clone();
+        grid2 = this.grid.clone();
 
         var pathA = finder.findPath(
             this.startX, this.startY, this.endX, this.endY, grid
         );
 
         var pathB = finder.findPath(
-            this.startX, this.startY, this.endX2, this.endY2, grid
+            this.startX, this.startY, this.endX2, this.endY2, grid1
         );
 
         var pathC = finder.findPath(
-            this.endX, this.endY, this.endX2, this.endY2, grid
+            this.endX, this.endY, this.endX2, this.endY2, grid2
         );
 
         var lenA = PF.Util.pathLength(pathA), lenB = PF.Util.pathLength(pathB);
