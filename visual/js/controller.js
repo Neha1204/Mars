@@ -190,7 +190,7 @@ $.extend(Controller, {
      }
 
      else {
-        if(pathA.empty()) {window.alert("Path not found"); console.log("Not found"); }
+        if(!pathA.length) {window.alert("Path not found"); console.log("Not found"); }
         this.path = pathA;
      }
 
