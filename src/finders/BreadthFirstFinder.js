@@ -73,8 +73,6 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
     }
     
     // fail to find the path
-    console.log("Path not found");
-    window.alert("No possible path from start to end point");
     return [];
 };
 
