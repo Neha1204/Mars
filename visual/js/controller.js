@@ -157,7 +157,7 @@ $.extend(Controller, {
             this.startX, this.startY, this.endX, this.endY, grid
         );
         
-     if(this.endX2 !== undefined || Controller.getDest() == "Two"){
+     if(this.endX2 !== undefined && Controller.getDest() == "Two"){
         grid1 = this.grid.clone();
         grid2 = this.grid.clone();
 
@@ -241,8 +241,8 @@ $.extend(Controller, {
         setTimeout(function() {
             Controller.clearOperations();
             Controller.clearAll();
-            Controller.buildNewGrid();
-            Controller.setDefaultStartEndPos();
+            Controller.onleavenone();
+         // Controller.setDefaultStartEndPos();
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
     },
