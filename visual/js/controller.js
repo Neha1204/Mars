@@ -90,7 +90,7 @@ var Controller = StateMachine.create({
         },
         {
             name: 'rest',
-            from: ['draggingStart', 'draggingEnd', 'drawingWall', 'erasingWall'],
+            from: ['draggingStart', 'draggingEnd', 'draggingEnd2', 'drawingWall', 'erasingWall'],
             to  : 'ready'
         },
     ],
