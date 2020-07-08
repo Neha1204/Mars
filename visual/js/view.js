@@ -165,7 +165,7 @@ var View = {
                 this.nodeSize,
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.normal, 2000);
+             .animate(this.nodeStyle.normal, 1000);
     },
     /**
      * Set the attribute of the node at the given coordinate.
