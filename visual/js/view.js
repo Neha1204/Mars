@@ -157,6 +157,16 @@ var View = {
             this.endNode2.attr({ x: coord[0], y: coord[1] }).toFront();
         }
     },
+    setNormalPos: function(gridX, gridY) {
+        var coord = this.toPageCoordinate(gridX, gridY);
+        this.paper.rect(
+                coord[0],
+                coord[1],
+                this.nodeSize,
+                this.nodeSize
+            ).attr(this.nodeStyle.normal)
+             .animate(this.nodeStyle.normal, 2000);
+    },
     /**
      * Set the attribute of the node at the given coordinate.
      */
