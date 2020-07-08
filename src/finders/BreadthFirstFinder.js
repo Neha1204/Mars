@@ -36,44 +36,35 @@ function BreadthFirstFinder(opt) {
  *     end positions.
  */
 BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
-    var openList = [],
-        diagonalMovement = this.diagonalMovement,
-        startNode = grid.getNodeAt(startX, startY),
-        endNode = grid.getNodeAt(endX, endY),
-        neighbors, neighbor, node, i, l;
+    var openlist = [],
+        startnode = grid.getNodeAt(startX, startY),
+        endnode   = grid.getNodeAt(endX, endY),
+        neighbours, neighbour, i, node; 
 
-    // push the start pos into the queue
-    openList.push(startNode);
-    startNode.opened = true;
+    openList.push(startnode);
+    startnode.opened = true;
 
-    // while the queue is not empty
-    while (openList.length) {
-        // take the front node from the queue
+    while(openList.length){
         node = openList.shift();
         node.closed = true;
 
-        // reached the end position
-        if (node === endNode) {
-            return Util.backtrace(endNode);
-        }
+        if(node == endnode) return Util.backtrace(endnode);
 
-        neighbors = grid.getNeighbors(node, diagonalMovement);
-        for (i = 0, l = neighbors.length; i < l; ++i) {
-            neighbor = neighbors[i];
+        neighbours = grid.getNeighbors(node, this.diagonalMovement);
 
-            // skip this neighbor if it has been inspected before
-            if (neighbor.closed || neighbor.opened) {
-                continue;
+        for(i=0; i<neighbours.length; i++){
+            neighbour = neighbours[i];
+
+            if(!neighbour.opened){
+                opeList.push(neighbourNode);
+                neighbourNode.parent = node;
+                nighbourNode.opened =true;
             }
-
-            openList.push(neighbor);
-            neighbor.opened = true;
-            neighbor.parent = node;
         }
     }
-    
-    // fail to find the path
-    return [];
+
+    return []; 
+
 };
 
 module.exports = BreadthFirstFinder;
