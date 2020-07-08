@@ -16,6 +16,7 @@ function BreadthFirstFinder(opt) {
     this.allowDiagonal = opt.allowDiagonal;
     this.dontCrossCorners = opt.dontCrossCorners;
     this.diagonalMovement = opt.diagonalMovement;
+    this.biDirectional = opt.biDirectional;
 
     if (!this.diagonalMovement) {
         if (!this.allowDiagonal) {
@@ -36,7 +37,9 @@ function BreadthFirstFinder(opt) {
  *     end positions.
  */
 BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
+    var bi = this.biDirectional;
 
+  if(!bi){
     var openlist = [],
         startnode = grid.getNodeAt(startX, startY),
         endnode   = grid.getNodeAt(endX, endY),
@@ -57,7 +60,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                opeList.push(neighbourNode);
+                openList.push(neighbourNode);
                 neighbourNode.parent = node;
                 nighbourNode.opened =true;
             }
@@ -65,6 +68,72 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
     }
 
     return []; 
+   }
+
+  else{
+    var openlist = [],
+        endList = [],
+        startnode = grid.getNodeAt(startX, startY),
+        endnode   = grid.getNodeAt(endX, endY),
+        neighbours, neighbour, i, node, 
+        by_start = 1, by_end = 2; 
+
+    openList.push(startnode);
+    startnode.opened = true;
+    startnode.by = by_start;
+
+    endList.push(endnode);
+    endnode.opened = true;
+    endnode.by = by_end;
+
+    while(openList.length && endList.length){
+        node = openList.shift();
+        node.closed = true;
+
+        if(node == endnode) return Util.backtrace(endnode);
+
+        neighbours = grid.getNeighbors(node, this.diagonalMovement);
+
+        for(i=0; i<neighbours.length; i++){
+            neighbour = neighbours[i];
+
+            if(!neighbour.opened){
+                opeList.push(neighbourNode);
+                neighbourNode.parent = node;
+                nighbourNode.opened = true;
+                neighbourNode.by = by_start;
+            }
+
+            else if(neighbour.opened == by_end){
+                return Util.biBacktrace(node, neighbour);
+            }
+        }
+
+        node = endList.shift();
+        node.closed = true;
+
+        neighbours = grid.getNeighbors(node, this.diagonalMovement);
+
+        for(i=0; i<neighbours.length; i++){
+            neighbour = neighbours[i];
+
+            if(!neighbour.opened){
+                endList.push(neighbourNode);
+                neighbourNode.parent = node;
+                nighbourNode.opened = true;
+                neighbourNode.by = by_end;
+            }
+
+            else if(neighbour.opened == by_start){
+                return Util.biBacktrace(neighbour, node);
+            }
+        }
+
+    }
+
+    return []; 
+
+   }
 
 };
 

@@ -16,6 +16,7 @@ function BreadthFirstFinder(opt) {
     this.allowDiagonal = opt.allowDiagonal;
     this.dontCrossCorners = opt.dontCrossCorners;
     this.diagonalMovement = opt.diagonalMovement;
+    this.biDirectional = opt.biDirectional;
 
     if (!this.diagonalMovement) {
         if (!this.allowDiagonal) {
@@ -36,13 +37,23 @@ function BreadthFirstFinder(opt) {
  *     end positions.
  */
 BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
-    var openlist = [],
+   var bi = this.biDirectional;
+   
+    var openlist = [], endList = [],
         startnode = grid.getNodeAt(startX, startY),
         endnode   = grid.getNodeAt(endX, endY),
-        neighbours, neighbour, i, node; 
+        neighbours, neighbour, i, node,
+        by_start = 1, by_end =2; 
 
     openList.push(startnode);
     startnode.opened = true;
+    startnode.by = by_start;
+
+    if(bi){
+       endList.push(endnode);
+       endnode.opened = true;
+       endnode.by = by_end;
+    }
 
     while(openList.length){
         node = openList.shift();
@@ -56,12 +67,37 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                opeList.push(neighbourNode);
-                neighbourNode.parent = node;
-                nighbourNode.opened =true;
+                openList.push(neighbourNode);
+                neighbour.parent = node;
+                neighbour.opened =true;
+                neighbour.by = by_start;
+            }
+            else if(bi && neighbour.by == by_start){
+                 return Util.biBacktrace(node, neighbour);
             }
         }
-    }
+
+      if(bi){
+        node = endList.shift();
+        node.closed = true;
+
+        neighbours = grid.getNeighbors(node, this.diagonalMovement);
+
+        for(i=0; i<neighbours.length; i++){
+            neighbour = neighbours[i];
+
+            if(!neighbour.opened){
+                endList.push(neighbourNode);
+                neighbour.parent = node;
+                nighbour.opened = true;
+                neighbour.by = by_end;
+            }
+
+            else if(neighbour.opened == by_start){
+                return Util.biBacktrace(neighbour, node);
+            }
+        }    
+      }
 
     return []; 
 

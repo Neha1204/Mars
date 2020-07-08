@@ -171,7 +171,9 @@ $.extend(Controller, {
         );
 
         var lenA = PF.Util.pathLength(pathA), lenB = PF.Util.pathLength(pathB);
-
+        
+       if(lenA+lenB == 0) Path = [];
+       else{
         if(lenA < lenB){
             pathC.shift();
             Path = pathA.concat(pathC);  
@@ -188,8 +190,8 @@ $.extend(Controller, {
        }
        
        this.path = Path;
+      }
      }
-
      else {
         this.path = pathA;
      }
