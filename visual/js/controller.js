@@ -188,10 +188,10 @@ $.extend(Controller, {
             pathA.shift();
             Path = (pathB.reverse()).concat(pathA);
        }
-       
-       this.path = Path;
-      }
+      } 
+        this.path = Path; 
      }
+ 
      else {
         this.path = pathA;
      }
