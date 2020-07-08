@@ -102,7 +102,9 @@ var Controller = StateMachine.create({
 });
 
 $.extend(Controller, {
-    gridSize: [$(window).width(), $(window).height()], // number of nodes horizontally and vertically
+    gridWidth : $(window).width(),
+    gridHeight: $(window).height(),
+    gridSize: [gridWidth, gridHeight], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
     
      getDest: function(){ 
