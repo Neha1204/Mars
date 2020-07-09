@@ -69,7 +69,7 @@ DepthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid)
     }
 
     return []; 
- //  }
+   }
 
 /*
   else{

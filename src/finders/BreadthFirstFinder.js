@@ -98,7 +98,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             }
         }    
       }
-    }
+    
     return []; 
 
 };
