@@ -15,6 +15,7 @@ var pathfinding = {
     'BiDijkstraFinder'          : require('./finders/BiDijkstraFinder'),
     'IDAStarFinder'             : require('./finders/IDAStarFinder'),
     'JumpPointFinder'           : require('./finders/JumpPointFinder'),
+    'DepthFirstFinder'          : require('./finders/DepthFirstFinder')
 };
 
 window.PF = pathfinding;

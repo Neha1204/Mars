@@ -2,7 +2,7 @@ var Util = require('../core/Util');
 var DiagonalMovement = require('../core/DiagonalMovement');
 
 /**
- * Breadth-First-Search path finder.
+ * Depth-First-Search path finder.
  * @constructor
  * @param {Object} opt
  * @param {boolean} opt.allowDiagonal Whether diagonal movement is allowed.
@@ -10,8 +10,9 @@ var DiagonalMovement = require('../core/DiagonalMovement');
  * @param {boolean} opt.dontCrossCorners Disallow diagonal movement touching
  *     block corners. Deprecated, use diagonalMovement instead.
  * @param {DiagonalMovement} opt.diagonalMovement Allowed diagonal movement.
+ * @param {Boolean} opt.biDirectional whether bidirectional search or not.
  */
-function BreadthFirstFinder(opt) {
+function DepthFirstFinder(opt) {
     opt = opt || {};
     this.allowDiagonal = opt.allowDiagonal;
     this.dontCrossCorners = opt.dontCrossCorners;
@@ -36,7 +37,7 @@ function BreadthFirstFinder(opt) {
  * @return {Array<Array<number>>} The path, including both start and
  *     end positions.
  */
-BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
+DepthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
     var bi = this.biDirectional;
 
   if(!bi){
@@ -49,7 +50,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
     startnode.opened = true;
 
     while(openList.length){
-        node = openList.shift();
+        node = openList.pop();
         node.closed = true;
 
         if(node == endnode) return Util.backtrace(endnode);
@@ -60,9 +61,9 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                openList.push(neighbourNode);
-                neighbourNode.parent = node;
-                nighbourNode.opened =true;
+                openList.push(neighbour);
+                neighbour.parent = node;
+                neighbour.opened =true;
             }
         }
     }
@@ -87,7 +88,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
     endnode.by = by_end;
 
     while(openList.length && endList.length){
-        node = openList.shift();
+        node = openList.pop();
         node.closed = true;
 
         if(node == endnode) return Util.backtrace(endnode);
@@ -98,10 +99,10 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                opeList.push(neighbourNode);
-                neighbourNode.parent = node;
-                nighbourNode.opened = true;
-                neighbourNode.by = by_start;
+                openList.push(neighbour);
+                neighbour.parent = node;
+                neighbour.opened = true;
+                neighbour.by = by_start;
             }
 
             else if(neighbour.opened == by_end){
@@ -109,7 +110,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             }
         }
 
-        node = endList.shift();
+        node = endList.pop();
         node.closed = true;
 
         neighbours = grid.getNeighbors(node, this.diagonalMovement);
@@ -118,10 +119,10 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                endList.push(neighbourNode);
-                neighbourNode.parent = node;
-                nighbourNode.opened = true;
-                neighbourNode.by = by_end;
+                endList.push(neighbour);
+                neighbour.parent = node;
+                neighbour.opened = true;
+                neighbour.by = by_end;
             }
 
             else if(neighbour.opened == by_start){
@@ -136,3 +137,5 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
    }
 
 };
+
+module.exports = DepthFirstFinder;

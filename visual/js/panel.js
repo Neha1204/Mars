@@ -74,17 +74,29 @@ var Panel = {
                                      '.bi-directional:checked').val() !== 'undefined';
             dontCrossCorners = typeof $('#breadthfirst_section ' +
                                      '.dont_cross_corners:checked').val() !=='undefined';
-            if (biDirectional) {
-                finder = new PF.BiBreadthFirstFinder({
-                    allowDiagonal: allowDiagonal,
-                    dontCrossCorners: dontCrossCorners
-                });
-            } else {
+           
                 finder = new PF.BreadthFirstFinder({
                     allowDiagonal: allowDiagonal,
-                    dontCrossCorners: dontCrossCorners
+                    dontCrossCorners: dontCrossCorners,
+                    biDirectional: biDirectional
                 });
-            }
+            
+            break;
+
+        case 'depthfirst_header':
+            allowDiagonal = typeof $('#depthfirst_section ' +
+                                     '.allow_diagonal:checked').val() !== 'undefined';
+            biDirectional = typeof $('#depthfirst_section ' +
+                                     '.bi-directional:checked').val() !== 'undefined';
+            dontCrossCorners = typeof $('#depthfirst_section ' +
+                                     '.dont_cross_corners:checked').val() !=='undefined';
+            
+                finder = new PF.DepthFirstFinder({
+                    allowDiagonal: allowDiagonal,
+                    dontCrossCorners: dontCrossCorners,
+                    biDirectional: biDirectional
+                });
+            
             break;
 
         case 'bestfirst_header':
