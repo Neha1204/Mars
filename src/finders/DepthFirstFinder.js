@@ -40,7 +40,7 @@ function DepthFirstFinder(opt) {
 DepthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
     var bi = this.biDirectional;
 
-  if(!bi){
+ // if(!bi){
     var openlist = [],
         startnode = grid.getNodeAt(startX, startY),
         endnode   = grid.getNodeAt(endX, endY),
@@ -71,6 +71,7 @@ DepthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid)
     return []; 
    }
 
+/*
   else{
     var openlist = [],
         endList = [],
@@ -135,7 +136,7 @@ DepthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid)
     return []; 
 
    }
-
+ */
 };
 
 module.exports = DepthFirstFinder;
