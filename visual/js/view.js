@@ -157,6 +157,20 @@ var View = {
             this.endNode2.attr({ x: coord[0], y: coord[1] }).toFront();
         }
     },
+    setEndPos3: function(gridX, gridY) {
+        var coord = this.toPageCoordinate(gridX, gridY);
+        if (!this.endNode3) {
+            this.endNode3 = this.paper.rect(
+                coord[0],
+                coord[1],
+                this.nodeSize,
+                this.nodeSize
+            ).attr(this.nodeStyle.normal)
+             .animate(this.nodeStyle.end, 1000);
+        } else {
+            this.endNode3.attr({ x: coord[0], y: coord[1] }).toFront();
+        }
+    },
     setNormalPos: function(gridX, gridY) {
         var coord = this.toPageCoordinate(gridX, gridY);
         this.paper.rect(

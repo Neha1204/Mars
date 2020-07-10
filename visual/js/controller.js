@@ -84,6 +84,11 @@ var Controller = StateMachine.create({
             to:   'draggingEnd2'
         },
         {
+            name: 'dragEnd3',
+            from: ['ready', 'finished'],
+            to:   'draggingEnd3'
+        },
+        {
             name: 'drawWall',
             from: ['ready', 'finished'],
             to:   'drawingWall'
@@ -95,7 +100,7 @@ var Controller = StateMachine.create({
         },
         {
             name: 'rest',
-            from: ['draggingStart', 'draggingEnd', 'draggingEnd2', 'drawingWall', 'erasingWall'],
+            from: ['draggingStart', 'draggingEnd', 'draggingEnd2', 'draggingEnd3', 'drawingWall', 'erasingWall'],
             to  : 'ready'
         },
     ],
@@ -103,7 +108,7 @@ var Controller = StateMachine.create({
 
 $.extend(Controller, {
 
-    gridSize: [55, 30], // number of nodes horizontally and vertically
+    gridSize: [64, 36], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
     
      getDest: function(){ 
@@ -158,7 +163,7 @@ $.extend(Controller, {
             this.startX, this.startY, this.endX, this.endY, grid
         );
         
-     if(this.endX2 !== undefined && Controller.getDest() == "Two"){
+     if(this.endX2 !== undefined && Controller.getDest() === "Two"){
         grid1 = this.grid.clone();
         grid2 = this.grid.clone();
         var Path;
@@ -172,7 +177,7 @@ $.extend(Controller, {
 
         var lenA = PF.Util.pathLength(pathA), lenB = PF.Util.pathLength(pathB);
         
-       if(lenA+lenB == 0) Path = [];
+       if(lenA ===0 || lenB === 0) Path = [];
        else{
         if(lenA < lenB){
             pathC.shift();
@@ -191,7 +196,89 @@ $.extend(Controller, {
       } 
         this.path = Path; 
      }
+     else if(this.endX3 !== undefined && Controller.getDest() === "Three"){
+var gridB = this.grid.clone(), 
+    gridC = this.grid.clone(),
+    gridAB = this.grid.clone(),
+    gridAC = this.grid.clone(),
+    gridBC = this.grid.clone(); 
+
+var pathB = finder.findPath(this.startX, this.startY, this.endX2, this.endY2, gridB); 
+var pathC = finder.findPath(this.startX, this.startY, this.endX3, this.endY3, gridC); 
+var pathAB = finder.findPath(this.endX, this.endY, this.endX2, this.endY2, gridAB); 
+var pathAC = finder.findPath(this.endX, this.endY, this.endX3, this.endY3, gridAC); 
+var pathBC = finder.findPath(this.endX2, this.endY2, this.endX3, this.endY3, gridBC); 
  
+var lenA = PF.Util.pathLength(pathA),
+    lenB = PF.Util.pathLength(pathB),
+    lenC = PF.Util.pathLength(pathC),
+    lenBC = PF.Util.pathLength(pathBC),
+    lenAB = PF.Util.pathLength(pathAB),
+    lenAC = PF.Util.pathLength(pathAC);
+
+var lenABC = lenA+lenAB+lenBC,
+    lenACB = lenA+lenAC+lenBC,
+    lenBCA = lenB+lenBC+lenAC,
+    lenBAC = lenB+lenAB+lenAC,
+    lenCAB = lenC+lenAC+lenAB,
+    lenCBA = lenC+lenBC+lenAB;
+   
+var min_len = Math.min(lenABC, lenACB, lenBCA, lenBAC, lenCAB, lenCBA);
+
+if(min_len == lenABC) {
+   pathAB.shift();
+   pathAB.pop();
+   pathA = pathA.concat(pathAB);
+   pathA = pathA.concat(pathBC); 
+   this.path = pathA;
+}
+
+else if (min_len == lenACB) {
+   pathAC.shift();
+   pathAC.pop();
+   pathBC.reverse();
+   pathA = pathA.concat(pathAC);
+   pathA = pathA.concat(pathBC); 
+   this.path = pathA;
+}
+
+else if (min_len == lenBCA) {
+   pathBC.shift();
+   pathBC.pop();
+   pathAC.reverse();
+   pathB = pathB.concat(pathBC);
+   pathB = pathB.concat(pathAC); 
+   this.path = pathB;
+}
+
+else if (min_len == lenBAC) {
+   pathAB.reverse();
+   pathAB.shift();
+   pathAB.pop();
+   pathB = pathB.concat(pathAB);
+   pathB = pathB.concat(pathAC); 
+   this.path = pathB;
+}
+
+else if (min_len == lenCAB) {
+   pathAC.shift();
+   pathAC.pop();
+   pathAC.reverse();
+   pathC = pathC.concat(pathAC);
+   pathC = pathC.concat(pathAB); 
+   this.path = pathC;
+}
+
+else{
+   pathBC.shift();
+   pathBC.pop();
+   pathBC.reverse();
+   pathAB.reverse();
+   pathC = pathC.concat(pathBC);
+   pathC = pathC.concat(pathAB); 
+   this.path = pathC;
+}
+     }
      else {
         this.path = pathA;
      }
@@ -503,6 +590,10 @@ $.extend(Controller, {
             this.dragEnd2();
             return;
         }
+        if (this.can('dragEnd3') && this.isEndPos3(gridX, gridY)) {
+            this.dragEnd3();
+            return;
+        }
         if (this.can('drawWall') && grid.isWalkableAt(gridX, gridY)) {
             this.drawWall(gridX, gridY);
             return;
@@ -535,6 +626,11 @@ $.extend(Controller, {
         case 'draggingEnd2':
             if (grid.isWalkableAt(gridX, gridY)) {
                 this.setEndPos2(gridX, gridY);
+            }
+            break;
+        case 'draggingEnd3':
+            if (grid.isWalkableAt(gridX, gridY)) {
+                this.setEndPos3(gridX, gridY);
             }
             break;
         case 'drawingWall':
@@ -594,12 +690,30 @@ $.extend(Controller, {
         this.setStartPos(centerX - 5, centerY);
         this.setEndPos(centerX + 5, centerY);
         
-        if(Controller.getDest() == "Two") this.setEndPos2(centerX, centerY);
-        else if(this.endX2){
-           Controller.setWalkableAt(this.endX2,this.endY2,true);
-           View.setNormalPos(this.endX2,this.endY2);
-           this.endX2 = this.endY2 = undefined;
-        } 
+        if(Controller.getDest() === "Two") {
+            this.setEndPos2(centerX, centerY);
+            
+            if(this.endX3){
+               this.setEndPos3(64*30, 36*30);
+            }
+        }
+        else if(Controller.getDest() === "Three"){
+            this.setEndPos2(centerX, centerY);
+            this.setEndPos3(centerX, centerY-5); 
+        }
+        else{
+            if(this.endX2){
+         //  Controller.setWalkableAt(this.endX2,this.endY2,true);
+         //  View.setNormalPos(this.endX2,this.endY2);
+               this.setEndPos2(64*30, 36*30);
+               this.endX2 = this.endY2 = undefined;
+            }
+        
+           if(this.endX3){
+               this.setEndPos3(64*30, 36*30);
+               this.endX3 = this.endY3 = undefined;
+            }
+       }
     },
     setStartPos: function(gridX, gridY) {
         this.startX = gridX;
@@ -616,6 +730,11 @@ $.extend(Controller, {
         this.endY2 = gridY;
         View.setEndPos2(gridX, gridY);
     },
+    setEndPos3: function(gridX, gridY) {
+        this.endX3 = gridX;
+        this.endY3 = gridY;
+        View.setEndPos3(gridX, gridY);
+    },
     setWalkableAt: function(gridX, gridY, walkable) {
         this.grid.setWalkableAt(gridX, gridY, walkable);
         View.setAttributeAt(gridX, gridY, 'walkable', walkable);
@@ -630,7 +749,11 @@ $.extend(Controller, {
         if(this.endX2 === undefined) return false;
         return (gridX === this.endX2 && gridY === this.endY2);
     },
+    isEndPos3: function(gridX, gridY) {
+        if(this.endX3 === undefined) return false;
+        return (gridX === this.endX3 && gridY === this.endY3);
+    },
     isStartOrEndPos: function(gridX, gridY) {
-        return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY) || this.isEndPos2(gridX, gridY);
+        return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY) || this.isEndPos2(gridX, gridY) || this.isEndPos3(gridX, gridY);
     },
 });
