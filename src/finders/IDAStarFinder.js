@@ -65,7 +65,7 @@ function IDAStarFinder(opt) {
  *     end positions.
 */
 
-IDAStarFinder.prototype.findPath(startX, startY, endX, endY, grid){
+IDAStarFinder.prototype.findPath = function(startX, startY, endX, endY, grid){
 
     var visitedNode = 0;
 
@@ -78,6 +78,19 @@ IDAStarFinder.prototype.findPath(startX, startY, endX, endY, grid){
     var cost = function(a,b){
         return (a.x==b.x || a.y==b.y)? 1 : Math.SQRT2 ;
     };
+
+    /**
+     * IDA* search implementation.
+     *
+     * @param {Node} The node currently expanding from.
+     * @param {number} Cost to reach the given node.
+     * @param {number} Maximum search depth (cut-off value).
+     * @param {Array<Array<number>>} The found route.
+     * @param {number} Recursion depth.
+     *
+     * @return {Object} either a number with the new optimal cut-off depth,
+     * or a valid node instance, in which case a path was found.
+     */
  
     var search = function(node, g, cutoff, route, depth){
          visitedNode++;
@@ -135,7 +148,7 @@ IDAStarFinder.prototype.findPath(startX, startY, endX, endY, grid){
        
        t = search(start, 0, cutoff, route, 0);
 
-       if(t instanceOf Node) return route;
+       if(t instanceof Node) return route;
        if(t == Infinity) return [];
      
        cutoff = t;
