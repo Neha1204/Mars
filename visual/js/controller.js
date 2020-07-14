@@ -330,6 +330,12 @@ $.extend(Controller, {
         for (var i = 1; i < n; i++) { 
             if (!(bit_mask & (1<<i))) { 
 			    var new_o = {p: new Array};
+				
+				if(!gr[pos][i][0]){
+				    order.p = new_o.p;	
+					return 0; 
+				}
+				
                 var new_len = Controller.getPath(bit_mask|(1<<i), gr, i, n, new_o);
 				new_len += gr[pos][i][0] ;
 				
@@ -659,13 +665,14 @@ $.extend(Controller, {
         if(Controller.getDest() === "Two") {
             this.setEndPos(centerX, centerY+5, 2);
             
-            if(this.endNodes[3]){
-               this.setEndPos(64*nodeSize, 36*nodeSize, 3);
-			   this.endNodes.splice(3);
-            }
 			if(this.endNodes[4]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 4);
 			   this.endNodes.splice(4);
+            }
+			
+            if(this.endNodes[3]){
+               this.setEndPos(64*nodeSize, 36*nodeSize, 3);
+			   this.endNodes.splice(3);
             }
         }
         else if(Controller.getDest() === "Three"){

@@ -39,7 +39,8 @@ function BreadthFirstFinder(opt) {
 BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
    var bi = this.biDirectional;
    
-    var openList = [], endList = [],
+    var endList = [],
+	    openList = [],
         startnode = grid.getNodeAt(startX, startY),
         endnode   = grid.getNodeAt(endX, endY),
         neighbours, neighbour, i, node,
