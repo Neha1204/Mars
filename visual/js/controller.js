@@ -1,13 +1,3 @@
-
-/**
- * The visualization controller will works as a state machine.
- * See files under the `doc` folder for transition descriptions.
- * See https://github.com/jakesgordon/javascript-state-machine
- * for the document of the StateMachine module.
- */
- 
- 
- 
 var Controller = StateMachine.create({
     initial: 'none',
     events: [
@@ -133,21 +123,23 @@ $.extend(Controller, {
 
     gridSize: [64, 36], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
-    
+	RoverImg: ['./visual/js/mars_rover.png', './visual/js/mars_rover2.png', './visual/js/mars_rover3.png'],
+
     getDest: function(){ 
         var destattr =$('input[name=dest]:checked').val();
-        return destattr;
+    	return destattr;
     },
 	
 	getStype: function(){ 
         var stype =$('input[name=stype]:checked').val();
-        return stype;
+    	return stype;
     },
-	
+
 	getGridSize: function(){
-        var w = Math.floor($(window).width()/View.nodeSize) +1,
-            h = Math.floor($(window).height()/View.nodeSize) + 1;
-        this.gridSize = [w,h];
+          var w = Math.floor($(window).width()/View.nodeSize) +1,
+              h = Math.floor($(window).height()/View.nodeSize) + 1;
+          console.log(w, h);
+          this.gridSize = [w,h];
      },
 
     /**
@@ -164,9 +156,15 @@ $.extend(Controller, {
             numCols: numCols,
             numRows: numRows
         });
-		
+
 		this.endNodes = new Array;
+		this.startNodes = new Array;
+		this.stype = 0;
+		this.setType = "0zero";
 		
+		var x = document.getElementById("WelcomeMsg");
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3500);
+
         View.generateGrid(function() {
             Controller.setDefaultStartEndPos();
             Controller.bindEvents();
@@ -190,36 +188,70 @@ $.extend(Controller, {
     },
     onsearch: function(event, from, to) {
         var timeStart, timeEnd;
-        
+
         timeStart = window.performance ? performance.now() : Date.now();
-	    
-		var possible = {a: true},
-     		gr = this.makeGraph(this.endNodes, possible);
-       
-	    if(!possible.a) this.path = [];
-	    else{
-		    var n = this.endNodes.length,
-                pathArray = new Array;
-                order = {p: new Array},
-                len = this.getPath(1,gr,0,n, order),
-		        f = order.p.reverse(),  l = f.length;
-		
-		    for(var j=0; j<l-1; j++){
-			    if(f[j+1] > f[j] ) gr[f[j]][f[j+1]][1].reverse();
-		        pathArray = pathArray.concat(gr[f[j]][f[j+1]][1]);	
-		    }	
-		
-            this.path = pathArray;
-        }
-		
+      
+	  if(this.setType === "0zero"){
+		var gr = this.makeGraph(this.endNodes),
+            n = this.endNodes.length,
+            pathArray = new Array,
+            order = {p: new Array},
+            len = this.getPath(1,gr,0,n, order),
+		    f = order.p.reverse(),  l = f.length;
+
+		for(var j=0; j<l-1; j++){
+			 if(f[j+1] > f[j] ) gr[f[j]][f[j+1]][1].reverse();
+		     pathArray = pathArray.concat(gr[f[j]][f[j+1]][1]);	
+		}	
+
+        this.path = pathArray;
+      }
+	  else{
+		View.setRoverPos2(Controller.startNodes[0][0], Controller.startNodes[0][1], 0);
+		View.setRoverPos2(Controller.startNodes[1][0], Controller.startNodes[1][1], 1);
+		View.setRoverPos2(Controller.startNodes[2][0], Controller.startNodes[2][1], 2); 
+		console.log(this.startNodes);
+		this.winner = new Array;
+        var graph = this.makeGraph2(this.startNodes);
+        this.graph = graph;
+	  }
+	  
         this.operationCount = this.operations.length;
         timeEnd = window.performance ? performance.now() : Date.now();
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
 
         this.loop();
-        
+
         // => searching
     },
+	
+	makeGraph2: function(endNodes){
+        var n = endNodes.length;
+        var graph = new Array(n-1); 
+		var win_len = 100000;
+
+        for(var i = 0; i < graph.length; i++){
+          
+                var Grid,finder = Panel.getFinder();
+                Grid = this.grid.clone(i);
+
+                var dist = finder.findPath(
+                  endNodes[i][0], endNodes[i][1], endNodes[n-1][0], endNodes[n-1][1], Grid, i
+                );
+				
+                var len = PF.Util.pathLength(dist);
+		          
+		if(len< win_len && len > 0) {win_len = len; this.winner = [i]; }
+        else if(len === win_len) this.winner.push(i);		
+		
+                graph[i] = new Array(2);
+                graph[i][0]=len;
+                graph[i][1]= dist;
+        }
+       
+        return graph;
+	},
+	
     onrestart: function() {
         // When clearing the colorized nodes, there may be
         // nodes still animating, which is an asynchronous procedure.
@@ -243,47 +275,92 @@ $.extend(Controller, {
     oncancel: function(event, from, to) {
         this.clearOperations();
         this.clearFootprints();
-		
-		View.showStats({
-            pathLength: 0,
-            timeSpent:  0,
-            operationCount: 0,
-        });
         // => ready
     },
     onfinish: function(event, from, to) {
+		
+	  if(this.setType === "0zero"){	
         View.showStats({
             pathLength: PF.Util.pathLength(this.path),
             timeSpent:  this.timeSpent,
             operationCount: this.operationCount,
         });
-        View.drawPath(this.path);
+        View.drawPath(this.path, 0);
 
-        if(!this.path.length) {window.alert("Path not found"); }
+        if(!this.path.length) {window.alert("Path not found"); console.log("Not found"); }
+	  }
+      else{	  
+		
+		var path = this.graph;
+		
+        View.showStats2({
+            pathLength1: path[0][0],
+			pathLength2: path[1][0],
+			pathLength3: path[2][0],
+            timeSpent:  this.timeSpent,
+            operationCount: this.operationCount,
+        });  
+		
+		var imgs = [ "<img src= './visual/js/mars_rover.png' width=30% >" , 
+		             "<img src= './visual/js/mars_rover2.png' width=30% />" ,
+		             "<img src= './visual/js/mars_rover3.png' width=34% />"
+		];
+		
+		var x = document.getElementById("WinMsg");	
+		
+		console.log(this.winner);
+		
+		if(this.winner[0] === undefined){
+			x.innerHTML = "No rover can reach the destination.";
+		}	
+		else{	
+		    var pathLen = path[this.winner[0]][0];
+		    for(var i=0; i<3; i++){
+				if(this.winner.indexOf(i) === -1){
+					
+					var len = 0, j=0;
+					while(len <= pathLen){
+					    a = path[i][1][j];
+                        b = path[i][1][j+1];
+                        dx = a[0] - b[0];
+                        dy = a[1] - b[1];
+                        len += Math.sqrt(dx * dx + dy * dy);
+                        j++;						
+					}
+					path[i][1].splice(j);
+					View.setRoverPos2(path[i][1][j-1][0], path[i][1][j-1][1], i);
+				}
+				
+				View.drawPath(path[i][1], i);
+		
+	        }	
+		     
+			View.setRoverWinPos(this.winner, this.startNodes[3][0], this.startNodes[3][1]);
+			 
+		    var winRover = (this.winner[0] +1);
+			var winImg = imgs[Controller.winner[0]];
+		     
+		    for(var i=1; i<this.winner.length; i++){
+			    winRover = winRover + " and rover " + (this.winner[i]+1);   
+		        winImg = winImg + " " +imgs[Controller.winner[i]];
+			}	
+		
+			x.innerHTML = "Congrats, rover " + winRover + " won" + "<br>" + winImg ;
+		}	
+			
+        setTimeout(function(){ x.className = x.className.replace("", "show"); }, 1000);
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 4000);
+	  }	
+		
         // => finished
     },
     onclear: function(event, from, to) {
         this.clearOperations();
         this.clearFootprints();
-		
-		View.showStats({
-            pathLength: "Search not started",
-            timeSpent:  0,
-            operationCount: 0,
-        });
         // => ready
     },
     onmodify: function(event, from, to) {
         // => modified
-    },
-	onraceset: function(event, from, to) {
-        setTimeout(function() {
-            Controller.clearOperations();
-            Controller.clearAll();
-            Controller.buildNewGrid();
-            Controller.setDefaultStartEndPos2();
-        }, View.nodeColorizeEffect.duration * 1.2);
-        // => ready
     },
     onset: function(event, from, to) {
         setTimeout(function() {
@@ -294,7 +371,48 @@ $.extend(Controller, {
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
     },
-    onreset: function(event, from, to) {
+	onraceset: function(event, from, to) {
+		var a = this.setType = this.getStype();
+		this.stype = a[0];
+		var x = document.getElementById("WelcomeMsg");
+        setTimeout(function() {
+            Controller.clearOperations();
+            Controller.clearAll();
+            Controller.buildNewGrid();
+            if(a === "1one") { 
+			    Controller.setDefaultStartEndPos2(); 			    
+				x.innerHTML = "Welcome to the race between rovers <br> Enjoy the race";               				
+			}
+		    else { 
+			    Controller.setDefaultStartEndPos(); 
+				x.innerHTML = "Welcome Find the shortest path <br> Enjoy the race";    
+			}
+        }, View.nodeColorizeEffect.duration * 1.2);
+		
+		this.setButtonStates({
+            id: 1,
+            text: 'Start ' + this.StypeState[this.stype] ,
+            enabled: true,
+            callback: $.proxy(this.start, this),
+        }, {
+            id: 2,
+            text: 'Pause ' + this.StypeState[this.stype] ,
+            enabled: false,
+        }, {
+            id: 4,
+            text: 'Set dest',
+            enabled: this.SetDestType[this.stype],
+            callback: $.proxy(this.set, this),
+        });
+				
+		x.className = x.className.replace("", "show"); 
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3500);  		
+        // => ready
+    },
+	StypeState: ["Search", "Race"],
+	SetDestType: [true, false],
+	
+    onreset: function(event, from, to) {i
         setTimeout(function() {
             Controller.clearOperations();
             Controller.clearAll();
@@ -308,15 +426,15 @@ $.extend(Controller, {
      */
 
     onready: function() {
-        console.log('=> ready');
+        console.log('=> ready'+ this.stype);
         this.setButtonStates({
             id: 1,
-            text: 'Start Search',
+            text: 'Start ' + this.StypeState[this.stype] ,
             enabled: true,
             callback: $.proxy(this.start, this),
         }, {
             id: 2,
-            text: 'Pause Search',
+            text: 'Pause ' + this.StypeState[this.stype] ,
             enabled: false,
         }, {
             id: 3,
@@ -326,17 +444,17 @@ $.extend(Controller, {
         }, {
             id: 4,
             text: 'Set dest',
-            enabled: true,
+            enabled: this.SetDestType[this.stype],
             callback: $.proxy(this.set, this),
 		}, {
             id: 5,
-            text: 'Race',
+            text: 'Set',
             enabled: true,
-            callback: $.proxy(this.raceset, this),
+            callback: $.proxy(this.raceset, this),	
         });
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
-	makeGraph: function(endNodes, possible){
+	makeGraph: function(endNodes){
         var n = endNodes.length;
         var graph = new Array(n); 
         for (var i = 0; i < graph.length; i++) { 
@@ -351,11 +469,8 @@ $.extend(Controller, {
                 var dist = finder.findPath(
                   endNodes[i][0], endNodes[i][1], endNodes[j][0], endNodes[j][1], Grid
                 );
-				
+
                 var len = PF.Util.pathLength(dist);
-				
-				//if(len === 0) {console.log("1"); possible.a = false ; return false; }
-				
 				graph[j][i] = new Array(2);
                 graph[j][i][0]=len;
                 graph[j][i][1]=dist;
@@ -364,7 +479,7 @@ $.extend(Controller, {
                 graph[i][j][1]= dist.reverse();
             }
         }
-       
+
         return graph;
 
     },
@@ -373,21 +488,21 @@ $.extend(Controller, {
             order.p.push(pos);			
 			return 0; 
         } 
-        
+
         var min_len = 1000000;		
-		
+
         for (var i = 1; i < n; i++) { 
             if (!(bit_mask & (1<<i))) { 
 			    var new_o = {p: new Array};
-				
+
 				if(!gr[pos][i][0]){
 				    order.p = new_o.p;	
 					return 0; 
 				}
-				
+
                 var new_len = Controller.getPath(bit_mask|(1<<i), gr, i, n, new_o);
 				new_len += gr[pos][i][0] ;
-				
+
                 if(new_len < min_len) {			
 					min_len = new_len;
 					order.p = new_o.p;
@@ -409,6 +524,11 @@ $.extend(Controller, {
             text: 'Set dest',
             enabled: false,
             callback: $.proxy(this.set, this),
+		}, {
+            id: 5,
+            text: 'Set',
+            enabled: false,
+            callback: $.proxy(this.raceset, this),	
         });
         this.search();
         // => searching
@@ -417,25 +537,24 @@ $.extend(Controller, {
         console.log('=> searching');
         this.setButtonStates({
             id: 1,
-            text: 'Restart Search',
+            text: 'Restart ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.restart, this),
         }, {
             id: 2,
-            text: 'Pause Search',
+            text: 'Pause ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.pause, this),
         }, {
             id: 4,
             text: 'Set dest',
             enabled: false,
-            callback: $.proxy(this.set, this),
-        });
-		
-		View.showStats({
-            pathLength: "Searching",
-            timeSpent:  0,
-            operationCount: 0,
+            callback: $.proxy(this.raceset, this),
+		}, {
+            id: 5,
+            text: 'Set',
+            enabled: false,
+            callback: $.proxy(this.set, this),	
         });
         // => [paused, finished]
     },
@@ -443,19 +562,24 @@ $.extend(Controller, {
         console.log('=> paused');
         this.setButtonStates({
             id: 1,
-            text: 'Resume Search',
+            text: 'Resume ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.resume, this),
         }, {
             id: 2,
-            text: 'Cancel Search',
+            text: 'Cancel ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.cancel, this),
         }, {
             id: 4,
             text: 'Set dest',
-            enabled: true,
+            enabled: this.SetDestType[this.stype],
             callback: $.proxy(this.set, this),
+		}, {
+            id: 5,
+            text: 'Set',
+            enabled: true,
+            callback: $.proxy(this.raceset, this),	
         });
         // => [searching, ready]
     },
@@ -463,7 +587,7 @@ $.extend(Controller, {
         console.log('=> finished');
         this.setButtonStates({
             id: 1,
-            text: 'Restart Search',
+            text: 'Restart ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.restart, this),
         }, {
@@ -474,15 +598,20 @@ $.extend(Controller, {
         }, {
             id: 4,
             text: 'Set dest',
-            enabled: true,
+            enabled: this.SetDestType[this.stype],
             callback: $.proxy(this.set, this),
+		}, {
+            id: 5,
+            text: 'Set',
+            enabled: true,
+            callback: $.proxy(this.raceset, this),		
         });
     },
     onmodified: function() {
         console.log('=> modified');
         this.setButtonStates({
             id: 1,
-            text: 'Start Search',
+            text: 'Start ' + this.StypeState[this.stype],
             enabled: true,
             callback: $.proxy(this.start, this),
         }, {
@@ -493,8 +622,13 @@ $.extend(Controller, {
         }, {
             id: 4,
             text: 'Set dest',
-            enabled: true,
+            enabled: this.SetDestType[this.stype],
             callback: $.proxy(this.set, this),
+		}, {
+            id: 5,
+            text: 'Set',
+            enabled: true,
+            callback: $.proxy(this.raceset, this),		
         });
     },
 
@@ -596,8 +730,9 @@ $.extend(Controller, {
             gridY = coord[1],
             grid  = this.grid;
 
-    if(this.getStype === "1"){
-        if (this.can('dragStart') && this.isStartPos(gridX, gridY )) {
+      if(this.setType !== "1one"){
+
+        if (this.can('dragStart') && this.isStartPos(gridX, gridY)) {
             this.dragStart();
             return;
         }
@@ -617,25 +752,25 @@ $.extend(Controller, {
             this.dragEnd4();
             return;
         }
-	}
-    else{
-        if (this.can('dragStart2') && this.isStartPos(gridX, gridY, 1)) {
-            this.dragStart2();
-            return;
-        }
-		if (this.can('dragStart3') && this.isStartPos(gridX, gridY, 2)) {
-            this.dragStart3();
-            return;
-        }
-        if (this.can('dragStart') && this.isStartPos(gridX, gridY, 0)) {
+	  }
+      else{
+		if (this.can('dragStart') && this.isStartPos2(gridX, gridY, 0)) {
             this.dragStart();
             return;
         }
-        if (this.can('dragEnd') && this.isEndPos(gridX, gridY, 1)) {
-            this.dragEnd();
+        if (this.can('dragStart2') && this.isStartPos2(gridX, gridY, 1)) {
+            this.dragStart2();
             return;
         }
-	}	
+        if (this.can('dragStart3') && this.isStartPos2(gridX, gridY, 2)) {
+            this.dragStart3();
+            return;
+        }		
+		if (this.can('dragEnd') && this.isEndPos2(gridX, gridY, 3)) {
+            this.dragEnd();
+            return;
+        } 
+	  }	  
         if (this.can('drawWall') && grid.isWalkableAt(gridX, gridY)) {
             this.drawWall(gridX, gridY);
             return;
@@ -649,18 +784,17 @@ $.extend(Controller, {
             grid = this.grid,
             gridX = coord[0],
             gridY = coord[1];
-
+      if(this.setType !== "1one"){
         if (this.isStartOrEndPos(gridX, gridY)) {
             return;
         }
-        
-	if(this.getStype === "1"){	
+
         switch (this.current) {
         case 'draggingStart':
             if (grid.isWalkableAt(gridX, gridY)) {
                 this.setStartPos(gridX, gridY);
             }
-            break;		
+            break;
         case 'draggingEnd':
             if (grid.isWalkableAt(gridX, gridY)) {
                 this.setEndPos(gridX, gridY, 1);
@@ -688,37 +822,35 @@ $.extend(Controller, {
             this.setWalkableAt(gridX, gridY, true);
             break;
         }
-	}
-    else{
-		switch (this.current) {
+	  }
+      else{
+		if (this.isStartOrEndPos2(gridX, gridY)) {
+            return;
+        }
+
+        switch (this.current) {
         case 'draggingStart':
             if (grid.isWalkableAt(gridX, gridY)) {
-                this.setStartPos(gridX, gridY, 0);
-            }
-            break;		
-        case 'draggingEnd':
-            if (grid.isWalkableAt(gridX, gridY)) {
-                this.setEndPos(gridX, gridY, 1);
+                this.setStartPos2(gridX, gridY,0);
             }
             break;
 		case 'draggingStart2':
             if (grid.isWalkableAt(gridX, gridY)) {
-                this.setStartPos(gridX, gridY, 1);
+                this.setStartPos2(gridX, gridY,1);
             }
             break;
-        case 'draggingStart3':
+		case 'draggingStart3':
             if (grid.isWalkableAt(gridX, gridY)) {
-                this.setStartPos(gridX, gridY, 2);
+                this.setStartPos2(gridX, gridY,2);
             }
-            break;
-        case 'drawingWall':
-            this.setWalkableAt(gridX, gridY, false);
-            break;
-        case 'erasingWall':
-            this.setWalkableAt(gridX, gridY, true);
-            break;
-        } 			
-	 }	
+            break;	
+        case 'draggingEnd':
+            if (grid.isWalkableAt(gridX, gridY)) {
+                this.setEndPos2(gridX, gridY,3);
+            }
+            break; 
+		}	
+	  }	  
     },
     mouseup: function(event) {
         if (Controller.can('rest')) {
@@ -765,18 +897,28 @@ $.extend(Controller, {
 
         centerX = Math.ceil(availWidth / 2 );
         centerY = Math.floor(height / 2 );
-
+		
+		if(this.startNodes[0]){
+		   this.setEndPos2(64*nodeSize, 36*nodeSize, 3);
+	       this.startNodes.splice(3);
+		
+		   for(var i=2; i>=0; i--){
+		      this.setStartPos2(64*nodeSize, 36*nodeSize, i);
+		      this.startNodes.splice(i);
+           }
+		}
+		
         this.setStartPos(centerX - 5, centerY);
         this.setEndPos(centerX + 5, centerY, 1);
-        
+
         if(Controller.getDest() === "Two") {
             this.setEndPos(centerX, centerY+5, 2);
-            
+
 			if(this.endNodes[4]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 4);
 			   this.endNodes.splice(4);
             }
-			
+
             if(this.endNodes[3]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 3);
 			   this.endNodes.splice(3);
@@ -785,7 +927,7 @@ $.extend(Controller, {
         else if(Controller.getDest() === "Three"){
             this.setEndPos(centerX, centerY+5, 2);
             this.setEndPos(centerX, centerY-5, 3); 
-			
+
 			if(this.endNodes[4]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 4);
 			   this.endNodes.splice(4);
@@ -795,24 +937,24 @@ $.extend(Controller, {
             this.setEndPos(centerX, centerY+5, 2);
             this.setEndPos(centerX, centerY-5, 3); 
 			this.setEndPos(centerX-10, centerY, 4);
-			
+
 		}	
         else{
 			if(this.endNodes[4]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 4);
 			   this.endNodes.splice(4);
             }
-			
+
 			if(this.endNodes[3]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 3);
 			   this.endNodes.splice(3);
             }
-			
+
             if(this.endNodes[2]){
                this.setEndPos(64*nodeSize, 36*nodeSize, 2);
 			   this.endNodes.splice(2);
             }
-			
+
        }
     },
     setStartPos: function(gridX, gridY) {
@@ -838,7 +980,8 @@ $.extend(Controller, {
 		return (gridX === this.endNodes[n][0] && gridY === this.endNodes[n][1]);
     },
     isStartOrEndPos: function(gridX, gridY) {
-        return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY, 1) || this.isEndPos(gridX, gridY, 2) || this.isEndPos(gridX, gridY, 3) || this.isEndPos(gridX, gridY, 4);
+        return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY, 1) || this.isEndPos(gridX, gridY, 2) ||
+        	   this.isEndPos(gridX, gridY, 3) || this.isEndPos(gridX, gridY, 4);
     },
 	
 	setDefaultStartEndPos2: function() {
@@ -848,22 +991,23 @@ $.extend(Controller, {
             endX, endY,
             nodeSize = View.nodeSize;
 
-        width  = this.gridSize[0]*nodeSize;
-        height = this.gridSize[1]*nodeSize;
+        width  = this.gridSize[0]*30;
+        height = this.gridSize[1]*30;
 
         marginRight = $('#algorithm_panel').width();
         availWidth = width - marginRight;
 
         centerX = Math.ceil(availWidth / 2 / nodeSize);
         centerY = Math.floor(height / 2 / nodeSize);
- 
-        for(var i=this.endNodes.size-1; i>0; i--){
-            this.setEndPos(64*nodeSize, 36*nodeSize, i);
-			this.endNodes.splice(i);
-		}	
-		this.setStartPos(64*nodeSize, 36*nodeSize, 0);
+		
+		for(var i=this.endNodes.length - 1; i>0; i--){
+		   this.setEndPos(64*nodeSize, 36*nodeSize, i);
+		   this.endNodes.splice(i);
+        }
+		
+		this.setStartPos(64*nodeSize, 36*nodeSize);
 		this.endNodes.splice(0);
-
+		
         this.setStartPos2(centerX-1, centerY, 0);
 	    this.setStartPos2(centerX+4, centerY-5, 1);
 	    this.setStartPos2(centerX+4, centerY+5, 2);
@@ -872,12 +1016,12 @@ $.extend(Controller, {
     },
     setStartPos2: function(gridX, gridY, n) {
         this.startNodes[n] = [gridX, gridY];
-        View.setStartPos(gridX, gridY, n);
-		View.setRoverPos(gridX, gridY, n);
+        View.setStartPos2(gridX, gridY, n);
+		View.setRoverPos2(gridX, gridY, n);
     },
     setEndPos2: function(gridX, gridY, n) {
         this.startNodes[n] = [gridX, gridY];
-        View.setEndPos(gridX, gridY, n);
+        View.setEndPos2(gridX, gridY, n);
     },
     isStartPos2: function(gridX, gridY, n) {
 		if(this.startNodes[n] === undefined) return false;
@@ -888,9 +1032,8 @@ $.extend(Controller, {
 		return (gridX === this.startNodes[n][0] && gridY === this.startNodes[n][1]);
     },
     isStartOrEndPos2: function(gridX, gridY) {
-        return this.isStartPos(gridX, gridY,0) || this.isStartPos(gridX, gridY,1) || this.isStartPos(gridX, gridY,2) || this.isEndPos(gridX, gridY,3);
+        return this.isStartPos2(gridX, gridY,0) || this.isStartPos2(gridX, gridY,1) || 
+		       this.isStartPos2(gridX, gridY,2) || this.isEndPos2(gridX, gridY,3);
     },
-});
- 
- 
 
+});

@@ -14,7 +14,7 @@ var View = {
             'stroke-opacity': 0.2,
         },
         start: {
-            fill: '#0d0',
+            fill: ['#cdc1c5', '#f4a460', '#5f9ea0'],
             'stroke-opacity': 0.2,
         },
         end: {
@@ -46,10 +46,11 @@ var View = {
         transform: 's1.2', // scale by 1.2x
         transformBack: 's1.0',
     },
-    pathStyle: {
-        stroke: 'yellow',
+	pathStyle: {
+        stroke: ['#cdc1c5', '#f4a460', '#5f9ea0'],
         'stroke-width': 3,
     },
+	roverimg: ['./visual/js/mars_rover.png', './visual/js/mars_rover2.png', './visual/js/mars_rover3.png'],
     supportedOperations: ['opened', 'closed', 'tested'],
     init: function(opts) {
         this.numCols      = opts.numCols;
@@ -124,24 +125,22 @@ var View = {
                 this.nodeSize,
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.start, 1000);
+             .animate({fill: this.nodeStyle.start.fill[0], 'stroke-opacity': 0.2 }, 1000);
+			 
+			this.Img = new Array;
+            this.Img[0] =  this.paper.image( './visual/js/mars_rover3.png', coord[0], coord[1], this.nodeSize, this.nodeSize );			
         } else {
             this.startNode.attr({ x: coord[0], y: coord[1] }).toFront();
+			this.Img[0].remove();
+			this.Img[0] =  this.paper.image( './visual/js/mars_rover3.png', coord[0], coord[1], this.nodeSize, this.nodeSize )	;
         }
     },
     setEndPos: function(gridX, gridY, n) {
         var coord = this.toPageCoordinate(gridX, gridY);
         if (!this.endNode)  {
 			this.endNode = new Array;
-            this.endNode[n-1] = this.paper.rect(
-                coord[0],
-                coord[1],
-                this.nodeSize,
-                this.nodeSize
-            ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.end, 1000);
         }
-		else if(!this.endNode[n-1]){
+		if(!this.endNode[n-1]){
 			this.endNode[n-1] = this.paper.rect(
                 coord[0],
                 coord[1],
@@ -149,20 +148,100 @@ var View = {
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
              .animate(this.nodeStyle.end, 1000);
+			 
+			this.Img[n] =  this.paper.image( './visual/js/race_end.png', coord[0], coord[1], this.nodeSize, this.nodeSize )	;
 		}
 		else {
             this.endNode[n-1].attr({ x: coord[0], y: coord[1] }).toFront();
+			this.Img[n].remove();
+			this.Img[n] =  this.paper.image( './visual/js/race_end.png', coord[0], coord[1], this.nodeSize, this.nodeSize )	;
         }
     },
-    setNormalPos: function(gridX, gridY) {
+    setStartPos2: function(gridX, gridY, n) {
         var coord = this.toPageCoordinate(gridX, gridY);
-        this.paper.rect(
+        if (!this.startNodes)  {
+			this.startNodes = new Array;
+        }
+		if(!this.startNodes[n]){
+	
+			this.startNodes[n] = this.paper.rect(
                 coord[0],
                 coord[1],
                 this.nodeSize,
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.normal, 100);
+             .animate({fill: this.nodeStyle.start.fill[n], 'stroke-opacity': 0.2 }, 1000);
+		}
+		else {
+            this.startNodes[n].attr({ x: coord[0], y: coord[1] }).toFront();
+        }
+    },
+	
+	setRoverPos2: function(gridX, gridY, n) {
+        var coord = this.toPageCoordinate(gridX, gridY);
+        if (!this.img)  {
+			this.img = new Array;
+			this.img[n] = this.paper.image( this.roverimg[n], coord[0], coord[1], this.nodeSize, this.nodeSize ); 
+        }
+		else if(!this.img[n]){
+			this.img[n] =  this.paper.image( this.roverimg[n], coord[0], coord[1], this.nodeSize, this.nodeSize ).toFront(); 
+		}
+		else {
+			this.img[n].remove();
+			this.img[n] =  this.paper.image( this.roverimg[n], coord[0], coord[1], this.nodeSize, this.nodeSize ).toFront(); 
+        }
+    },
+	setRoverWinPos2: function(winner, gridX, gridY){
+		var coord = this.toPageCoordinate(gridX, gridY);
+		this.img[winner[0]].remove();
+		this.img[winner[0]] =  this.paper.image( this.roverimg[winner[0]], coord[0], coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 
+		
+		if(winner[1] !== undefined){
+			this.img[winner[1]].remove();
+		    this.img[winner[1]] =  this.paper.image( this.roverimg[winner[1]], coord[0]+18, coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
+		}
+		
+		if(winner[2] !== undefined){
+			this.img[winner[2]].remove();
+		    this.img[winner[2]] =  this.paper.image( this.roverimg[winner[2]], coord[0], coord[1], this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
+		}
+	},	
+	setRoverWinPos: function(winner, gridX, gridY){
+		var coord = this.toPageCoordinate(gridX, gridY);
+		this.img[winner[0]].remove();
+		this.img[winner[0]] =  this.paper.image( this.roverimg[winner[0]], coord[0], coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 
+		
+		if(winner[1] !== undefined){
+			this.img[winner[1]].remove();
+		    this.img[winner[1]] =  this.paper.image( this.roverimg[winner[1]], coord[0]+18, coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
+		}
+		
+		if(winner[2] !== undefined){
+			this.img[winner[2]].remove();
+		    this.img[winner[2]] =  this.paper.image( this.roverimg[winner[2]], coord[0], coord[1], this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
+		}
+	},	
+    setEndPos2: function(gridX, gridY, n) {
+        var coord = this.toPageCoordinate(gridX, gridY);
+        if (!this.startNode)  {
+			this.startNode = new Array;
+		}
+        if(!this.startNode[n]){		
+            this.startNode[n] = this.paper.rect(
+                coord[0],
+                coord[1],
+                this.nodeSize,
+                this.nodeSize 
+            ).attr(this.nodeStyle.normal)
+             .animate(this.nodeStyle.end, 1000);
+			 
+			this.img_end = this.paper.image( './visual/js/race_end.png', coord[0], coord[1], this.nodeSize, this.nodeSize );
+        }
+		else {
+            this.startNode[n].attr({ x: coord[0], y: coord[1] }).toFront();
+			this.img_end.remove();
+			this.img_end = this.paper.image( './visual/js/race_end.png', coord[0], coord[1], this.nodeSize, this.nodeSize ).toFront(); 
+        }
     },
     /**
      * Set the attribute of the node at the given coordinate.
@@ -262,12 +341,13 @@ var View = {
             }
         }
     },
-    drawPath: function(path) {
+    drawPath: function(path, n) {
         if (!path.length) {
             return;
         }
         var svgPath = this.buildSvgPath(path);
-        this.path = this.paper.path(svgPath).attr(this.pathStyle);
+		if(!this.path) this.path = new Array;
+        this.path[n] = this.paper.path(svgPath).attr({stroke: this.pathStyle.stroke[n], 'stroke-width': 3});
     },
     /**
      * Given a path, build its SVG represention.
@@ -286,7 +366,9 @@ var View = {
     },
     clearPath: function() {
         if (this.path) {
-            this.path.remove();
+			for(var i=0; i<this.path.length; i++){ 
+               this.path[i].remove();
+			}   
         }
     },
     /**
@@ -315,6 +397,31 @@ var View = {
         ];
         $('#stats').show().html(texts.join('<br>'));
     },
+	showStats2: function(opts) {
+		var len1 = Math.round(opts.pathLength1 * 100) / 100;
+		if(!len1){ 
+			len1 = 'PATH DOES NOT EXIST';
+		}
+		
+		var len2 = Math.round(opts.pathLength2 * 100) / 100;
+		if(!len2){ 
+			len2 = 'PATH DOES NOT EXIST';
+		}
+		
+		var len3 = Math.round(opts.pathLength3 * 100) / 100;
+		if(!len3){ 
+			len3 = 'PATH DOES NOT EXIST';
+		}
+		
+        var texts = [
+            'Rover 1 length: ' + len1,
+			'Rover 2 length: ' + len2,
+			'Rover 3 length: ' + len3,
+            'time: ' + opts.timeSpent + 'ms',
+            'operations: ' + opts.operationCount
+        ];
+        $('#stats').show().html(texts.join('<br>'));
+    }, 
     setCoordDirty: function(gridX, gridY, isDirty) {
         var x, y,
             numRows = this.numRows,
