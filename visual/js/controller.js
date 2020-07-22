@@ -16,6 +16,11 @@ var Controller = StateMachine.create({
             from: '*',
             to:   'ready'
         },
+		{
+            name: 'nodeset',
+            from: '*',
+            to:   'ready'
+        },
         {
             name: 'search',
             from: 'starting',
@@ -124,7 +129,12 @@ $.extend(Controller, {
     gridSize: [64, 36], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
 	RoverImg: ['./visual/js/mars_rover.png', './visual/js/mars_rover2.png', './visual/js/mars_rover3.png'],
-
+ 
+    getNodeSize: function() {
+        var zoom = $('input[name=nodesize]').val();
+        View.setNodeSize(zoom);
+    },
+	
     getDest: function(){ 
         var destattr =$('input[name=dest]:checked').val();
     	return destattr;
@@ -288,7 +298,7 @@ $.extend(Controller, {
 		View.setRoverPos2(path[1][1][i][0], path[1][1][i][1], 1);
 		View.setRoverPos2(path[2][1][i][0], path[2][1][i][1], 2);
 		
-		if(i<pathLen-1){
+		if(i<pathLen){
 			setTimeout(function(){
 				Controller.callback(path, i+1, pathLen);
 			}, 500);	
@@ -435,6 +445,18 @@ $.extend(Controller, {
         setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3500);  		
         // => ready
     },
+	onnodeset: function(){
+		this.getNodeSize();
+		setTimeout(function() {
+            Controller.clearOperations();
+            Controller.clearAll();
+			View.generateGrid();
+            Controller.buildNewGrid();
+			Controller.setDefaultStartEndPos();
+        }, View.nodeColorizeEffect.duration * 1.2);
+		
+		
+	},	
 	StypeState: ["Search", "Race"],
 	SetDestType: [true, false],
 	
@@ -477,6 +499,11 @@ $.extend(Controller, {
             text: 'Set',
             enabled: true,
             callback: $.proxy(this.raceset, this),	
+		}, {
+            id: 6,
+            text: 'Set',
+            enabled: true,
+            callback: $.proxy(this.nodeset, this),		
         });
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },

@@ -73,6 +73,12 @@ h1, h2, h3, h4, h5, h6 {
     width: 170px;
 }
 
+#NodeSize {
+    top: 550px;
+    left: 20px;
+    width: 130px;
+}
+
 #WelcomeMsg {
   visibility: hidden;
   background-color: rgba(0, 0, 0, 0.6);
