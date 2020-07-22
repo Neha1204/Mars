@@ -1,4 +1,3 @@
-
 var Util = require('../core/Util');
 var DiagonalMovement = require('../core/DiagonalMovement');
 
@@ -37,19 +36,23 @@ function BreadthFirstFinder(opt) {
  * @return {Array<Array<number>>} The path, including both start and
  *     end positions.
  */
+
+
+
+
 BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, grid) {
    var bi = this.biDirectional;
    
     var endList = [],
-	    openlist = [],
+	    listopen = [],
         startnode = grid.getNodeAt(startX, startY),
         endnode   = grid.getNodeAt(endX, endY),
         neighbours, neighbour, i, node,
         by_start = 1, by_end =2; 
 
-    openlist.push(startnode);
     startnode.opened = true;
     startnode.by = by_start;
+	listopen.push(startnode);
 
     if(bi){
        endList.push(endnode);
@@ -57,8 +60,8 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
        endnode.by = by_end;
     }
 
-    while(openlist.length){
-        node = openlist.shift();
+    while(listopen.length){
+        node = listopen.shift();
         node.closed = true;
 
         if(node == endnode) return Util.backtrace(endnode);
@@ -69,7 +72,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
             neighbour = neighbours[i];
 
             if(!neighbour.opened){
-                openlist.push(neighbour);
+                listopen.push(neighbour);
                 neighbour.parent = node;
                 neighbour.opened =true;
                 neighbour.by = by_start;
@@ -95,7 +98,7 @@ BreadthFirstFinder.prototype.findPath = function(startX, startY, endX, endY, gri
                 neighbour.by = by_end;
             }
 
-            else if(neighbour.opened == by_start){
+            else if(neighbour.by == by_start){
                 return Util.biBacktrace(neighbour, node);
             }
         }    

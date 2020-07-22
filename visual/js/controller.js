@@ -277,6 +277,23 @@ $.extend(Controller, {
         this.clearFootprints();
         // => ready
     },
+	callback: function(path, i, pathLen){
+		path1 = [path[0][1][i-1], path[0][1][i]];
+		path2 = [path[1][1][i-1], path[1][1][i]];
+		path3 = [path[2][1][i-1], path[2][1][i]];
+		View.drawPath(path1, 0, i-1);
+		View.drawPath(path2, 1, i-1);
+		View.drawPath(path3, 2, i-1);
+		View.setRoverPos2(path[0][1][i][0], path[0][1][i][1], 0);
+		View.setRoverPos2(path[1][1][i][0], path[1][1][i][1], 1);
+		View.setRoverPos2(path[2][1][i][0], path[2][1][i][1], 2);
+		
+		if(i<pathLen-1){
+			setTimeout(function(){
+				Controller.callback(path, i+1, pathLen);
+			}, 500);	
+		}
+	},	
     onfinish: function(event, from, to) {
 		
 	  if(this.setType === "0zero"){	
@@ -285,7 +302,7 @@ $.extend(Controller, {
             timeSpent:  this.timeSpent,
             operationCount: this.operationCount,
         });
-        View.drawPath(this.path, 0);
+        View.drawPath(this.path, 0, 0);
 
         if(!this.path.length) {window.alert("Path not found"); console.log("Not found"); }
 	  }
@@ -315,7 +332,9 @@ $.extend(Controller, {
 		}	
 		else{	
 		    var pathLen = path[this.winner[0]][0];
-		    for(var i=0; i<3; i++){
+		    
+			/*
+			for(var i=0; i<3; i++){
 				if(this.winner.indexOf(i) === -1){
 					
 					var len = 0, j=0;
@@ -336,7 +355,14 @@ $.extend(Controller, {
 	        }	
 		     
 			View.setRoverWinPos(this.winner, this.startNodes[3][0], this.startNodes[3][1]);
+			 */
+			
+				setTimeout(function(){
+					Controller.callback(path, 1, pathLen);
+				}, 500);	
 			 
+			 
+			setTimeout(function(){View.setRoverWinPos(Controller.winner, Controller.startNodes[3][0], Controller.startNodes[3][1]);}, (pathLen+1)*500);
 		    var winRover = (this.winner[0] +1);
 			var winImg = imgs[Controller.winner[0]];
 		     
@@ -348,8 +374,8 @@ $.extend(Controller, {
 			x.innerHTML = "Congrats, rover " + winRover + " won" + "<br>" + winImg ;
 		}	
 			
-        setTimeout(function(){ x.className = x.className.replace("", "show"); }, 1000);
-        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 4000);
+        setTimeout(function(){ x.className = x.className.replace("", "show"); }, (pathLen+1)*500);
+        setTimeout(function(){ x.className = x.className.replace("show", ""); }, (pathLen+10)*500);
 	  }	
 		
         // => finished
@@ -412,7 +438,7 @@ $.extend(Controller, {
 	StypeState: ["Search", "Race"],
 	SetDestType: [true, false],
 	
-    onreset: function(event, from, to) {i
+    onreset: function(event, from, to) {
         setTimeout(function() {
             Controller.clearOperations();
             Controller.clearAll();
@@ -849,6 +875,12 @@ $.extend(Controller, {
                 this.setEndPos2(gridX, gridY,3);
             }
             break; 
+		case 'drawingWall':
+            this.setWalkableAt(gridX, gridY, false);
+            break;
+        case 'erasingWall':
+            this.setWalkableAt(gridX, gridY, true);
+            break;	
 		}	
 	  }	  
     },

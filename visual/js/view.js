@@ -191,29 +191,14 @@ var View = {
 			this.img[n] =  this.paper.image( this.roverimg[n], coord[0], coord[1], this.nodeSize, this.nodeSize ).toFront(); 
         }
     },
-	setRoverWinPos2: function(winner, gridX, gridY){
-		var coord = this.toPageCoordinate(gridX, gridY);
-		this.img[winner[0]].remove();
-		this.img[winner[0]] =  this.paper.image( this.roverimg[winner[0]], coord[0], coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 
-		
-		if(winner[1] !== undefined){
-			this.img[winner[1]].remove();
-		    this.img[winner[1]] =  this.paper.image( this.roverimg[winner[1]], coord[0]+18, coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
-		}
-		
-		if(winner[2] !== undefined){
-			this.img[winner[2]].remove();
-		    this.img[winner[2]] =  this.paper.image( this.roverimg[winner[2]], coord[0], coord[1], this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
-		}
-	},	
 	setRoverWinPos: function(winner, gridX, gridY){
 		var coord = this.toPageCoordinate(gridX, gridY);
 		this.img[winner[0]].remove();
-		this.img[winner[0]] =  this.paper.image( this.roverimg[winner[0]], coord[0], coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 
+		this.img[winner[0]] =  this.paper.image( this.roverimg[winner[0]], coord[0], coord[1]+ this.nodeSize/2, this.nodeSize/2, this.nodeSize/2 ).toFront(); 
 		
 		if(winner[1] !== undefined){
 			this.img[winner[1]].remove();
-		    this.img[winner[1]] =  this.paper.image( this.roverimg[winner[1]], coord[0]+18, coord[1]+18, this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
+		    this.img[winner[1]] =  this.paper.image( this.roverimg[winner[1]], coord[0]+ this.nodeSize/2, coord[1]+ this.nodeSize/2, this.nodeSize/2, this.nodeSize/2 ).toFront(); 		
 		}
 		
 		if(winner[2] !== undefined){
@@ -341,13 +326,14 @@ var View = {
             }
         }
     },
-    drawPath: function(path, n) {
+    drawPath: function(path, n, i) {
         if (!path.length) {
             return;
         }
         var svgPath = this.buildSvgPath(path);
 		if(!this.path) this.path = new Array;
-        this.path[n] = this.paper.path(svgPath).attr({stroke: this.pathStyle.stroke[n], 'stroke-width': 3});
+		if(!this.path[n]) this.path[n] = new Array;
+        this.path[n][i] = this.paper.path(svgPath).attr({stroke: this.pathStyle.stroke[n], 'stroke-width': 3});
     },
     /**
      * Given a path, build its SVG represention.
@@ -367,7 +353,9 @@ var View = {
     clearPath: function() {
         if (this.path) {
 			for(var i=0; i<this.path.length; i++){ 
-               this.path[i].remove();
+			  for(var j=0; j<this.path[i].length; j++){
+               this.path[i][j].remove();
+			  } 
 			}   
         }
     },
